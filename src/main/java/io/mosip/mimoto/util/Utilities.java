@@ -187,6 +187,7 @@ public class Utilities {
     }
     public String getCredentialSupportedTemplateString(String issuerId, String credentialType) {
         String templateFileName = String.format("%s-%s-template.html", issuerId, credentialType);
+        log.info("Template File Name: {}", templateFileName);
         if(activeProfile.contains("local")) {
             Path basePath = Paths.get("templates").toAbsolutePath().normalize();
             Path resolvedPath = basePath.resolve(templateFileName).normalize();
@@ -196,6 +197,7 @@ public class Utilities {
             }
 
             Resource credentialTemplateResource = new ClassPathResource(resolvedPath.toString());
+            log.info("Credential Template Resource: {}", credentialTemplateResource);
             try {
                 return Files.readString(credentialTemplateResource.getFile().toPath());
             } catch (IOException e) {
@@ -204,6 +206,7 @@ public class Utilities {
             return credentialTemplateHtmlString;
         }
         String specificCredentialPDFTemplate = getJson("", templateFileName);
+        log.info("Specific Credential PDF Template: {}", specificCredentialPDFTemplate);
         return !StringUtils.isEmpty(specificCredentialPDFTemplate)? specificCredentialPDFTemplate : getJson("", credentialTemplatePath);
     }
 

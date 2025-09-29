@@ -27,4 +27,8 @@ public class TokenResponseDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String c_nonce;
+
+    //c_nonce_expires_in
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer c_nonce_expires_in;
 }

@@ -161,6 +161,12 @@ public class WalletCredentialServiceImpl implements WalletCredentialService {
         try {
             // Parse decrypted credential
             VCCredentialResponse vcCredentialResponse = objectMapper.readValue(decryptedCredential, VCCredentialResponse.class);
+            
+            // Ensure type field is set if it's null
+            if (vcCredentialResponse.getCredential().getType() == null || vcCredentialResponse.getCredential().getType().isEmpty()) {
+                log.warn("Type field is null or empty in credential response from wallet, setting default type");
+                vcCredentialResponse.getCredential().setType(List.of("VerifiableCredential"));
+            }
 
             // Fetch issuer details
             IssuerDTO issuerDTO = issuersService.getIssuerDetails(credentialMetadata.getIssuerId());
@@ -181,7 +187,7 @@ public class WalletCredentialServiceImpl implements WalletCredentialService {
             }
 
             String dataShareUrl = QRCodeType.OnlineSharing.equals(issuerDTO.getQr_code_type()) ? dataShareService.storeDataInDataShare(objectMapper.writeValueAsString(vcCredentialResponse), credentialValidity) : "";
-
+            log.info("Data Share URL: {}", dataShareUrl);
 
             // Generate PDF
             // keep the datashare url and credential validity as defaults in downloading VC as PDF as logged-in user

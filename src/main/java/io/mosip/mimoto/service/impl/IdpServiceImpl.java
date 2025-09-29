@@ -8,6 +8,7 @@ import io.mosip.mimoto.exception.*;
 import io.mosip.mimoto.service.IdpService;
 import io.mosip.mimoto.service.IssuersService;
 import io.mosip.mimoto.util.JoseUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+
+import com.nimbusds.jwt.SignedJWT;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -75,19 +78,35 @@ public class IdpServiceImpl implements IdpService {
     }
 
     @Override
-    public TokenResponseDTO getTokenResponse(Map<String, String> params) throws ApiNotAccessibleException, IOException, AuthorizationServerWellknownResponseException, InvalidWellknownResponseException {
+    public TokenResponseDTO getTokenResponse(Map<String, String> params) 
+            throws ApiNotAccessibleException, IOException, AuthorizationServerWellknownResponseException, InvalidWellknownResponseException {
+        
         String issuerId = params.get("issuer");
         IssuerDTO issuerDTO = issuersService.getIssuerDetails(issuerId);
         CredentialIssuerConfiguration credentialIssuerConfiguration = issuersService.getIssuerConfiguration(issuerId);
         String tokenEndpoint = getTokenEndpoint(credentialIssuerConfiguration);
+        
         HttpEntity<MultiValueMap<String, String>> request = constructGetTokenRequest(params, issuerDTO, tokenEndpoint);
         TokenResponseDTO response = restTemplate.postForObject(tokenEndpoint, request, TokenResponseDTO.class);
+        
         if (response == null) {
             throw new IdpException("Exception occurred while performing the authorization");
         }
+    
+        // 🔎 Parsear el access_token y extraer el c_nonce
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(response.getAccess_token());
+            String cNonce = signedJWT.getJWTClaimsSet().getStringClaim("c_nonce");
+            response.setC_nonce(cNonce); // ✅ lo metés en el DTO
+            
+        } catch (Exception e) {
+            System.out.println("No se pudo extraer c_nonce del access_token");
+        }
+        // 🔎 Parsear el access_token y agrgarl 
+    
         return response;
     }
-
+    
 
     private Map<String, String> convertVerifiableCredentialRequestToMap(VerifiableCredentialRequestDTO verifiableCredentialRequest) {
         Map<String, String> params = new HashMap<>();
@@ -96,7 +115,7 @@ public class IdpServiceImpl implements IdpService {
         params.put("grant_type", verifiableCredentialRequest.getGrantType());
         params.put("code_verifier", verifiableCredentialRequest.getCodeVerifier());
         params.put("issuer", verifiableCredentialRequest.getIssuer());
-
+        params.put("c_nonce_expires_in", "18000");
         return params;
     }
 

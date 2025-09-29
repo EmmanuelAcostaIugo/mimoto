@@ -164,12 +164,15 @@ public class CredentialPDFGeneratorService {
 
         data.put("qrCodeImage", qrCodeImage);
         data.put("credentialValidity", credentialValidity);
+        log.info("Credential Validity: {}", credentialValidity);
         data.put("logoUrl", issuerDTO.getDisplay().stream().map(d -> d.getLogo().getUrl()).findFirst().orElse(""));
         data.put("rowProperties", rowProperties);
+        log.info("Row Properties: {}", rowProperties);
         data.put("textColor", textColor);
         data.put("backgroundColor", backgroundColor);
         data.put("backgroundImage", backgroundImage);
         data.put("titleName", credentialSupportedType);
+        log.info("Title Name: {}", credentialSupportedType);
         data.put("face", face);
         return data;
     }
@@ -186,9 +189,12 @@ public class CredentialPDFGeneratorService {
         // Merge the context with the template
         StringWriter writer = new StringWriter();
         Velocity.evaluate(velocityContext, writer, "Credential Template", credentialTemplate);
-
+        log.info("Merged HTML: {}", writer.toString());
+        log.info("Credential Template: {}", credentialTemplate);
+        log.info("Data: {}", data);
         // Get the merged HTML string
         String mergedHtml = writer.toString();
+        log.info("Merged HTML: {}", mergedHtml);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         PdfWriter pdfwriter = new PdfWriter(outputStream);
@@ -225,10 +231,12 @@ public class CredentialPDFGeneratorService {
     }
 
     private String constructQRCodeWithVCData(VCCredentialResponse vcCredentialResponse) throws JsonProcessingException, WriterException {
+        log.info("VC Credential Response: {}", vcCredentialResponse);
         String qrData = pixelPass.generateQRData(objectMapper.writeValueAsString(vcCredentialResponse.getCredential()), "");
         if (allowedQRDataSizeLimit > qrData.length()) {
             return constructQRCode(qrData);
         }
+        log.info("QR Data: {}", qrData);
         return "";
     }
 

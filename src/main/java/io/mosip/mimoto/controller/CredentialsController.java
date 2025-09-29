@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
 
 import static io.mosip.mimoto.exception.PlatformErrorMessages.MIMOTO_PDF_SIGN_EXCEPTION;
@@ -64,6 +65,9 @@ public class CredentialsController {
 
             log.info("Initiated Download Credential Call");
             ByteArrayInputStream inputStream = credentialService.downloadCredentialAsPDF(issuerId, credentialType, response, credentialValidity, locale);
+            log.info("Downloaded Credential Call");
+            
+            
             return ResponseEntity
                     .ok()
                     .contentType(MediaType.APPLICATION_PDF)

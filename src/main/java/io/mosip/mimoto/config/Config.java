@@ -153,10 +153,10 @@ public class Config {
     public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList(origins.split(",")));  // Allow all origins
-        corsConfiguration.addAllowedHeader("*");  // Allow all headers
-        corsConfiguration.addAllowedMethod("*");  // Allow all HTTP methods
-        corsConfiguration.setAllowCredentials(true);// Allow cookies to be sent
+        corsConfiguration.setAllowedOriginPatterns(Arrays.asList(origins.split(",")));
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.setAllowCredentials(true);
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
     }

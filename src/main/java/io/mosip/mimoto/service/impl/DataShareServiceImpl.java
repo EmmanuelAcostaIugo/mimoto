@@ -22,6 +22,8 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.PathMatcher;
 
+import java.util.List;
+
 @Slf4j
 @Service
 public class DataShareServiceImpl {
@@ -111,6 +113,12 @@ public class DataShareServiceImpl {
             }
             VCCredentialResponse vcCredentialResponse = objectMapper.readValue(vcCredentialResponseString, VCCredentialResponse.class);
             log.info("Completed Mapping the Credential to Object => " + vcCredentialResponse );
+            
+            // Ensure type field is set if it's null
+            if (vcCredentialResponse.getCredential().getType() == null || vcCredentialResponse.getCredential().getType().isEmpty()) {
+                log.warn("Type field is null or empty in credential response from data share, setting default type");
+                vcCredentialResponse.getCredential().setType(List.of("VerifiableCredential"));
+            }
             if(vcCredentialResponse.getCredential() == null){
                 DataShareResponseDto dataShareResponse = objectMapper.readValue(vcCredentialResponseString, DataShareResponseDto.class);
                 String errorCode = dataShareResponse.getErrors().get(0).getErrorCode();
